@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un date ?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f6f2ea;
+    --paper:#fffdf9;
+    --ink:#2c2420;
+    --muted:#8d8177;
+    --wine:#7a3b47;
+    --wine-dark:#5e2c37;
+    --blush:#e7d3d1;
+    --line:#e4dccf;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--cream);
+    background-image:
+      radial-gradient(circle at 20% 15%, rgba(122,59,71,0.03), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(122,59,71,0.04), transparent 45%);
+    font-family:'EB Garamond', serif;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-x:hidden;
+  }
+  .stage{
+    width:100%;
+    max-width:420px;
+    position:relative;
+    min-height:560px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(14px);
+    transition:opacity .5s ease, transform .5s ease, visibility 0s linear .5s;
+  }
+  .screen.active{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    box-shadow:0 18px 40px -20px rgba(44,36,32,0.25);
+    border-radius:2px;
+    padding:44px 32px;
+    width:100%;
+  }
+  .eyebrow{
+    font-family:'EB Garamond', serif;
+    font-size:11px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 18px;
+  }
+  h1.title{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:34px;
+    line-height:1.15;
+    margin:0 0 14px;
+    color:var(--ink);
+  }
+  .sub{
+    font-size:16px;
+    color:#544a43;
+    line-height:1.55;
+    margin:0 0 26px;
+  }
+  .hint{
+    font-size:13px;
+    color:var(--muted);
+    font-style:italic;
+    margin:-14px 0 26px;
+  }
+  /* envelope */
+  .envelope-wrap{cursor:pointer;}
+  .envelope{
+    width:120px;height:82px;
+    margin:0 auto 18px;
+    position:relative;
+    background:var(--blush);
+    border:1px solid var(--line);
+  }
+  .envelope::before{
+    content:"";
+    position:absolute;top:0;left:0;right:0;
+    height:0;
+    border-left:60px solid transparent;
+    border-right:60px solid transparent;
+    border-top:44px solid var(--cream);
+  }
+  .heart-btn{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--wine);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 14px;
+    box-shadow:0 8px 18px -6px rgba(122,59,71,.55);
+  }
+  .heart-btn svg{width:18px;height:18px;}
+  .touch-label{
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  /* buttons */
+  .btn-row{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:6px;
+    position:relative;
+    min-height:52px;
+  }
+  button{
+    font-family:'EB Garamond', serif;
+    font-size:16px;
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .btn-yes{
+    background:var(--wine);
+    color:#fff;
+    border:1px solid var(--wine);
+    padding:13px 30px;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn-yes:hover{background:var(--wine-dark);}
+  .btn-no{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid #cfc4b6;
+    padding:13px 22px;
+    position:relative;
+    transition:transform .18s ease;
+    white-space:nowrap;
+  }
+  .no-caption{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:16px;
+  }
+  /* slots */
+  .detail-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:14px 2px;
+    margin:22px 0 20px;
+    font-size:13px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .detail-row b{font-family:'EB Garamond'; font-weight:600; letter-spacing:.04em;}
+  .detail-row span.dim{color:var(--muted); text-transform:uppercase; font-size:12px;}
+  .slots{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:26px;
+  }
+  .slot{
+    border:1px solid #cfc4b6;
+    background:transparent;
+    padding:10px 16px;
+    font-size:14px;
+    color:var(--ink);
+    border-radius:20px;
+    transition:all .2s ease;
+  }
+  .slot.selected{
+    background:var(--wine);
+    color:#fff;
+    border-color:var(--wine);
+  }
+  .field-label{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  textarea{
+    width:100%;
+    resize:none;
+    font-family:'EB Garamond', serif;
+    font-size:15px;
+    border:none;
+    border-bottom:1px solid var(--line);
+    padding:6px 2px 10px;
+    background:transparent;
+    color:var(--ink);
+    outline:none;
+    margin-bottom:26px;
+  }
+  textarea::placeholder{color:#b8ada0; font-style:italic;}
+  .btn-confirm{
+    background:var(--wine);
+    color:#fff;
+    border:1px solid var(--wine);
+    padding:14px;
+    width:100%;
+    letter-spacing:.03em;
+    transition:background .2s ease, opacity .2s ease;
+  }
+  .btn-confirm:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-confirm:not(:disabled):hover{background:var(--wine-dark);}
+  .final-heart{
+    width:46px;height:46px;border-radius:50%;
+    background:var(--wine);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 16px;
+  }
+  .final-heart svg{width:19px;height:19px;}
+  .noted-label{
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;
+  }
+  .final-date{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;font-weight:600;
+    font-size:26px;margin:0 0 10px;
+  }
+  .final-sub{font-size:15px;color:#544a43;margin-bottom:18px;line-height:1.5;}
+  .final-hate{font-size:14px;font-style:italic;color:var(--muted);}
+  .note-echo{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    font-size:13px;
+    font-style:italic;
+    color:#665c53;
+  }
+  .admin{max-width:520px;width:100%;text-align:left;}
+  .admin h2{font-family:'Cormorant Garamond'; font-style:italic;}
+  .admin-item{border-bottom:1px solid var(--line); padding:12px 0; font-size:14px;}
+  .admin-empty{color:var(--muted); font-style:italic; font-size:14px;}
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- SCREEN 0 : envelope -->
+  <div class="screen active" data-screen="0">
+    <div class="envelope-wrap" id="envelopeBtn">
+      <div class="envelope"></div>
+      <div class="heart-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 21s-7.5-4.7-10-9.3C.3 8.1 2.2 4.5 6 4.5c2.1 0 3.6 1.1 4.5 2.4C11.4 5.6 12.9 4.5 15 4.5c3.8 0 5.7 3.6 4 7.2C19.5 16.3 12 21 12 21z"/></svg>
+      </div>
+      <div class="touch-label">Touche la lettre</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1 : question -->
+  <div class="screen" data-screen="1">
+    <div class="card">
+      <p class="eyebrow" id="recipientLine">Pour toi, Daniella</p>
+      <h1 class="title">Ça te dit un date avec moi ?</h1>
+      <p class="hint">(dire non ne sert à rien, mais tu peux essayer)</p>
+      <div class="btn-row">
+        <button class="btn-no" id="noBtn">Non</button>
+        <button class="btn-yes" id="yesBtn">Oui</button>
+      </div>
+      <p class="no-caption" id="noCaption">&nbsp;</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 : choice -->
+  <div class="screen" data-screen="2">
+    <div class="card">
+      <p class="eyebrow">Parfait</p>
+      <h1 class="title">On va voir</h1>
+      <p class="sub">Tu te rappelles notre petit coin secret dans le jeu, la maison avec le jet d'eau ?</p>
+
+      <div class="detail-row">
+        <b>Jeudi 29 juillet</b>
+        <span class="dim">VOST · Dolby Vision Andy</span>
+      </div>
+
+      <div class="slots">
+        <button class="slot" data-slot="19:30 → 22:15">19:30 → 22:15</button>
+        <button class="slot" data-slot="22:45 → 01:30">22:45 → 01:30</button>
+      </div>
+
+      <div class="field-label">A word for me (optional)</div>
+      <textarea id="noteField" rows="2" placeholder="Write something for me..."></textarea>
+
+      <button class="btn-confirm" id="confirmBtn" disabled>Confirmer</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3 : noted -->
+  <div class="screen" data-screen="3">
+    <div class="card">
+      <div class="final-heart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 21s-7.5-4.7-10-9.3C.3 8.1 2.2 4.5 6 4.5c2.1 0 3.6 1.1 4.5 2.4C11.4 5.6 12.9 4.5 15 4.5c3.8 0 5.7 3.6 4 7.2C19.5 16.3 12 21 12 21z"/></svg>
+      </div>
+      <p class="noted-label">C'est noté</p>
+      <p class="final-date" id="finalDate">Jeudi 29 juillet à 22:45</p>
+      <p class="final-sub">Pour me faire pardonner d'avoir été aux abonnés absents — promis, ça vaudra le détour.</p>
+      <p class="final-hate">J'ai déjà hâte.</p>
+      <div class="note-echo" id="noteEcho" style="display:none;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const screens = document.querySelectorAll('.screen');
+  function goTo(n){
+    screens.forEach(s => s.classList.toggle('active', s.dataset.screen === String(n)));
+  }
+
+  // envelope -> question
+  document.getElementById('envelopeBtn').addEventListener('click', () => goTo(1));
+
+  // NO button: dodges + guilt messages, never truly blocks the choice
+  const noBtn = document.getElementById('noBtn');
+  const noCaption = document.getElementById('noCaption');
+  const messages = ["T'es sûr ?", "Vraiment ?", "Réfléchis encore un peu...", "Dernière chance...", "Bon, d'accord... mais Oui est juste à côté 👀"];
+  let noClicks = 0;
+
+  function dodge(el){
+    const row = el.parentElement.getBoundingClientRect();
+    const maxX = Math.max(0, row.width - el.offsetWidth - 12);
+    const x = Math.random() * maxX * (Math.random() > 0.5 ? 1 : -1) * 0.6;
+    const y = (Math.random() - 0.5) * 16;
+    el.style.transform = `translate(${x}px, ${y}px)`;
+  }
+
+  noBtn.addEventListener('mouseenter', () => dodge(noBtn));
+  noBtn.addEventListener('click', () => {
+    noClicks++;
+    const msg = messages[Math.min(noClicks - 1, messages.length - 1)];
+    noCaption.textContent = msg;
+    noBtn.textContent = noClicks < messages.length ? "Non" : "Non ?";
+    dodge(noBtn);
+  });
+
+  document.getElementById('yesBtn').addEventListener('click', () => goTo(2));
+
+  // slot selection
+  const slotBtns = document.querySelectorAll('.slot');
+  const confirmBtn = document.getElementById('confirmBtn');
+  let selectedSlot = null;
+  slotBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      slotBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedSlot = btn.dataset.slot;
+      confirmBtn.disabled = false;
+    });
+  });
+
+  // confirm -> save + final screen
+  confirmBtn.addEventListener('click', async () => {
+    const note = document.getElementById('noteField').value.trim();
+    const startTime = selectedSlot ? selectedSlot.split(' → ')[0] : '';
+    document.getElementById('finalDate').textContent = `Jeudi 29 juillet à ${startTime}`;
+
+    const echo = document.getElementById('noteEcho');
+    if (note) {
+      echo.style.display = 'block';
+      echo.textContent = `Elle a ajouté : "${note}"`;
+    } else {
+      echo.style.display = 'none';
+    }
+
+    const record = {
+      answer: 'oui',
+      slot: selectedSlot,
+      note: note,
+      noClicksBeforeYes: noClicks,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await window.storage.set('response:' + Date.now(), JSON.stringify(record), true);
+    } catch (e) {
+      console.error('Storage error', e);
+    }
+
+    goTo(3);
+  });
+
+  // Admin / history view: open this page with ?admin in the URL
+  async function maybeShowAdmin(){
+    if (!location.search.includes('admin')) return;
+    const stage = document.getElementById('stage');
+    stage.innerHTML = '<div class="admin"><h2>Historique des réponses</h2><div id="adminList" class="admin-empty">Chargement...</div></div>';
+    const listEl = document.getElementById('adminList');
+    try {
+      const result = await window.storage.list('response:', true);
+      const keys = (result && result.keys) || [];
+      if (!keys.length) {
+        listEl.textContent = 'Aucune réponse pour le moment.';
+        return;
+      }
+      listEl.className = '';
+      listEl.innerHTML = '';
+      const items = [];
+      for (const k of keys) {
+        try {
+          const r = await window.storage.get(k, true);
+          if (r && r.value) items.push(JSON.parse(r.value));
+        } catch(e) {}
+      }
+      items.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+      items.forEach(it => {
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        const d = new Date(it.timestamp);
+        div.innerHTML = `<b>${it.answer === 'oui' ? 'A dit Oui 💛' : it.answer}</b> — créneau : ${it.slot || '—'}<br>
+          Mot laissé : ${it.note ? '"' + it.note + '"' : '(aucun)'}<br>
+          Tentatives de dire non avant : ${it.noClicksBeforeYes}<br>
+          <span style="color:#8d8177">${d.toLocaleString('fr-FR')}</span>`;
+        listEl.appendChild(div);
+      });
+    } catch (e) {
+      listEl.textContent = 'Impossible de charger l\'historique.';
+    }
+  }
+  maybeShowAdmin();
+})();
+</script>
+</body>
+</html>
